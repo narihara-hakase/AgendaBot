@@ -133,3 +133,22 @@ class google_calendar:
         
         # idの返却
         return eventid
+    
+'''
+メモ
+        # カレンダー系(試験用)
+        elif re.match('\$cadd1', com):
+            calendar.add_calendar_event('test', '2019-05-11T21:00:00', '2019-05-11T23:00:00')
+            send_ms = 'カレンダーを追加'
+            await message.channel.send(send_ms)
+
+        elif re.match('\$cadd2', com):
+            calendar.add_calendar_event('test2', '2019-05-11T21:00:00', '2019-05-11T23:00:00')
+            send_ms = 'カレンダーを追加'
+            await message.channel.send(send_ms)
+
+        elif re.match('\$cdel', com):
+            calendar.del_calendar_event('test2', '2019-05-11T21:00:00+09:00', '2019-05-11T23:00:00+09:00')
+            send_ms = 'カレンダーを削除'
+            await message.channel.send(send_ms)
+'''
