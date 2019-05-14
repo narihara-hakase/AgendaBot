@@ -3,6 +3,8 @@ import discord
 import re
 import random
 import datetime
+import asyncio
+import time
 
 ### 自作モジュールのインポート ###
 import swbot as SW
@@ -40,14 +42,6 @@ HELP_MSG =['``` ### ダイスを振る ###',
            '$logs VCアクセスログおよびサーバータイムを表示する。',
            '``` ']
 
-async def throw_message_date_changed():
-    while True:
-        if time.strftime('%H:%M:%S',time.localtime())=='00:00:00':
-            pin_ms = await discord.abc.Messageable.pins(client.get_channel(CH_AGENDA))
-            send_ms ='現在の募集中セッションは'+str(len(pin_ms))+'件だよ。参加してね。'
-            await client.get_channel(CH_GENERAL).send(send_ms)
-            sleep(5)
-
 if __name__ == '__main__':
             
     ### インスタンスの呼び出し ###
@@ -65,6 +59,17 @@ if __name__ == '__main__':
         print(client.user.name)
         print(client.user.id)
         print('------')
+        asyncio.ensure_future(throw_message_date_changed())
+        
+    ### 時刻管理 ###
+    async def throw_message_date_changed():
+        while True:
+            print('test')
+            if time.strftime('%H:%M',time.localtime())=='00:00':
+                pin_ms = await discord.abc.Messageable.pins(client.get_channel(CH_AGENDA))
+                send_ms ='現在の募集中セッションは'+str(len(pin_ms))+'件だよ。参加してね。'
+                await client.get_channel(CH_GENERAL).send(send_ms)
+            await asyncio.sleep(60)
         
     ### reaction付与時のイベントハンドラ ###
     @client.event
