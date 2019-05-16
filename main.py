@@ -159,6 +159,16 @@ if __name__ == '__main__':
             for ele_help in HELP_MSG:
                 mes = mes + ele_help + '\n'
             await message.channel.send(mes)
+        
+        ### 機能確認
+        if re.match('\$avatar', com)
+            avatar_hash = message.user.avatar
+            user_id = message.user.id
+            user_hash = message.user.hash
+            print(avatar_hash)
+            print(user_id)
+            print(user_hash)
+            await message.channel.send('https://images-ext-2.discordapp.net/external/' + avatar_hash +'/%3Fsize%3D1024/https/cdn.discordapp.com/avatars/'+ user_id + '/' + user_hash + '.webp')
 
         ### ダイス系
         #ダイス(振るだけ)
