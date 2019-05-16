@@ -5,6 +5,9 @@ import random
 import datetime
 import asyncio
 import time
+import requests
+import io
+from PIL import Image
 
 ### 自作モジュールのインポート ###
 import swbot as SW
@@ -159,17 +162,20 @@ if __name__ == '__main__':
             for ele_help in HELP_MSG:
                 mes = mes + ele_help + '\n'
             await message.channel.send(mes)
-        
-        ### 機能確認
-        if re.match('\$avatar', com)
-            avatar_hash = message.user.avatar
-            user_id = message.user.id
-            user_hash = message.user.hash
-            print(avatar_hash)
-            print(user_id)
-            print(user_hash)
-            await message.channel.send('https://images-ext-2.discordapp.net/external/' + avatar_hash +'/%3Fsize%3D1024/https/cdn.discordapp.com/avatars/'+ user_id + '/' + user_hash + '.webp')
 
+        ### 自己紹介カード自動生成機能(作りかけで放置)
+        elif re.match('\$avatar', com):
+            avatar_url = message.author.avatar_url
+            card_url = 'https://cdn.discordapp.com/attachments/425609740152995840/571361111325147185/712651fbc55cd866.png'
+            
+            user_img = Image.open(io.BytesIO(requests.get(avatar_url).content))
+            card_image = Image.open(io.BytesIO(requests.get(card_url).content))
+
+            card_image.paste(user_img, (6,10))
+            card_image.save('test.png', quality=95)
+            await message.channel.send('Hello', file=discord.File('test.png'))
+            #os.remove('test.png')
+        
         ### ダイス系
         #ダイス(振るだけ)
         elif re.match('\$\d+d\d+', com):
@@ -239,6 +245,56 @@ if __name__ == '__main__':
                         # ピンどめ Botに権限がないとエラーになります。
                         await message.pin()
 
+        ### ピンどめされているリストを取得し表示
+    #@client.event
+    #async def on_message(message):
+        #com = message.content
+        elif re.match('\$list', com):
+            arrSessionList = []
+            send_ms = ''
+            # pin留めされたメッセージを取得
+            pin_ms_list = await discord.abc.Messageable.pins(client.get_channel(CH_AGENDA))
+            
+            # pin留めされたメッセージの分析
+            for pin_mes_line in pin_ms_list:
+                # pin留めされたメッセージ本文を取得
+                mes_content = pin_mes_line.content
+                
+                # メッセージの投稿者のニックネームを取得
+                author = str(pin_mes_line.author.nick)
+                
+                # pin留めされたメッセージにつけられたリアクション数を取得
+                pl_num = sum(reaction.count for riaction in pin_mes_line.reactions)
+                print(pl_num)
+                
+                # メッセージのフォーマットを解析して配列化
+                database_row = agenda_control.on_message_agenda_write(mes_content)
+                
+                # メッセージのフォーマットの開始日と今日の日付を比較
+                ret = agenda_control.session_list_create(database_row, author, pl_num)
+                
+                ###############
+                # デバッグプリント
+                #print(ret)
+                #print('\n')
+                ###############
+                
+                # 今日よりもメッセージ内の開始日の日付が古い場合
+                if ret == 0:
+                    await pin_mes_line.unpin()
+                
+                # 今日よりもメッセージ内の開始日の日付が新しい場合
+                else:
+                    arrSessionList.append(ret)
+            
+            # 開始日でリストをソート
+            arrSessionList.sort(key=lambda x: x[2])
+            
+            # リストを出力
+            for mes_line in arrSessionList:
+                send_ms = send_ms + str(mes_line[0]) + ' ' + str(mes_line[1]) + ' ' + str(mes_line[2]) + '/' + str(mes_line[3]) + ' ' + str(mes_line[4]) + '\n'
+            await message.channel.send(send_ms)
+                    
         #'''
         # 試験用(サーバ実装時はコメントアウト、絶対に残さないこと！)
         # メッセージの全削除

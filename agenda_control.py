@@ -1,5 +1,6 @@
 import re
 import google_calendar
+import datetime
 
 calendar = google_calendar.google_calendar()
 
@@ -16,7 +17,7 @@ class agenda_control:
     DATABASE_COLUMN_CAPACITY = 7
     DATABASE_COLUMN_NOTES = 8
     
-    AGENDA_STANDARD = '```\n@everyone\n｜　種　別　｜単発/キャンペーン/常時\n｜開始日時　｜2019/05/15 19:00 (半角で入力してください)\n｜終了日時　｜2019/05/15 23:00 (半角で入力してください)\n｜システム　｜SW2.5\n｜シナリオ名｜シナリオ名\n｜ツール　　｜どどんとふ\n｜募集人数　｜2\n｜　概　要　｜\n卓の説明、その他。\n```'
+    AGENDA_STANDARD = '```\n@everyone\n｜　種　別　｜単発/キャンペーン/常時\n｜開始日時　｜2019/05/15 19:00:00 (半角で入力してください)\n｜終了日時　｜2019/05/15 23:00:00 (半角で入力してください)\n｜システム　｜SW2.5\n｜シナリオ名｜シナリオ名\n｜ツール　　｜どどんとふ\n｜募集人数　｜2\n｜　概　要　｜\n卓の説明、その他。\n```'
     
     AGENDA_ERR_MSG = ['以下の卓の投稿に失敗しました。\n','以下の投稿の編集結果のフォーマットが異なります、修正してください。','以下の投稿の卓は日付情報がフォーマットと異なります、修正してください。' ]
     AGENDA_ADD_ERROR = 0
@@ -140,3 +141,29 @@ class agenda_control:
             return 1
         except:
             return 0
+
+    def session_list_create(self, send_ms, author, pl_num):
+        system = self.name_create(author, send_ms[3])
+        title = send_ms[4]
+        startTime = datetime.datetime.strptime(self.time_for_discord(send_ms[1]), '%Y-%m-%d %H:%M:%S')
+        endTime = datetime.datetime.strptime(self.time_for_discord(send_ms[2]), '%Y-%m-%d %H:%M:%S')
+        player_num = str(pl_num) + ' / ' +str(send_ms[6])
+        
+        now = datetime.datetime.now()
+        
+        if startTime < now:
+            return 0
+        else:
+            startTime = self.time_for_discord(send_ms[1])
+            endTime = self.time_for_discord(send_ms[2])
+            arrRet = [system, title, startTime, endTime, player_num]
+            return arrRet
+        
+    def time_for_discord(self, mes):
+        result_time = str(mes).split(' ')
+        result_ymd = result_time[0].split('/')
+        result_hms = result_time[1].split(':')
+        strTime = result_ymd[0] + '-' + result_ymd[1] + '-' + result_ymd[2] + ' ' + result_hms[0] + ':' + result_hms[1] + ':' + result_hms[2]
+        retTime  = strTime.split('\n')
+        return retTime[0]
+
