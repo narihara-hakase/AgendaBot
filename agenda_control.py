@@ -42,17 +42,27 @@ class agenda_control:
         return send_ms
 
 
+    # Agenda形式チェック
     def on_message_agenda_write(self, mes):
+        
+        # データ保存用のリストを初期化
+        database_row = [0] * self.DATABASE_NUM
+
+        # 投稿文を|で分割
         arrMes = mes.split('｜')
 
-        database_row = [0] * self.DATABASE_NUM
+        # データ分割数からAgendaの要素数を取得
         arrDataNum = (len(arrMes) - 1)/2
 
         # 投稿文とのフォーマットが異なる場合はエラー
-        # 将来的にはキャンペーンや常時卓用の機能をはやすけど、今は単発卓のみ
+        # 将来的にはキャンペーンや常時卓用の機能追加したい
+        # 今は単発卓のみ
         #if (arrDataNum != self.SINGLE_AGENDA_NUM) and (arrDataNum != self.CANPANE_AGENDA_NUM) and (arrDataNum != self.ALWAYS_AGENDA_NUM):
+        
+        # 要素数から突発卓かを判定
+        # 違う場合はFalseを返す
         if (arrDataNum != self.SINGLE_AGENDA_NUM):
-            return 0
+            return bool(False)
 
         '''
         # キャンペーン投稿文の場合、開始/終了時間がないため、配列を増やす
@@ -65,105 +75,207 @@ class agenda_control:
             arrMes.insert(self.DATABASE_COLUMN_START_TIME,0) # 開始の挿入
             arrMes.insert(self.DATABASE_COLUMN_END_TIME,0) # 終了の挿入
         '''
-        # 単発卓投稿文の場合、開始/終了時間がNULLの場合エラー
+        
+        # 単発卓投稿文の場合、開始/終了時間がNULLの場合異常を返す
         if arrDataNum == self.SINGLE_AGENDA_NUM:
             if arrMes[self.DATABASE_COLUMN_START_TIME] == 0 or arrMes[self.DATABASE_COLUMN_END_TIME] == 0:
-                return 0
+                return bool(False)
        
-        # データベース1行分のリストにデータをコピー
+        # Agendaの各要素を格納
         # everyoneから始まる行が0、種別が1、種別の内容が2…と格納されている
         for i in range(self.DATABASE_NUM):
+            
+            # 募集人数を格納
             if i == self.DATABASE_COLUMN_CAPACITY:
+                
                 # 募集人数を数値に変更
                 database_row[i - 1] = int(arrMes[ i * 2 ])
+            
+            # 概要を格納
             elif i == self.DATABASE_COLUMN_NOTES:
+                
                 # 概要は改行を含め全てそのまま格納
                 database_row[i - 1] = arrMes[ i * 2 ]
+                
+            # @everyone行は無視
             elif i == 0:
-                # @everyoneは何もしない
                 pass
+            
+            # それ以外の行は改行を消して格納
             else:
                 # 改行文字を削除
                 database_row[i - 1] = arrMes[ i * 2 ].replace('\n', '')
+        
+        # 格納したデータを戻す
         return database_row
     
+    # カレンダー用の日付形式変更
     def time_format_change(self, mes):
-        # mesは配列の1か2を渡すこと！
-        # 時差をたすこと()
+
+        # 文字列操作に失敗したらexcept文へ飛ぶ
         try :
+            
+            # YMD Hmsと分割
             result_time = str(mes).split(' ')
+            
+            # Y M D を分割
             result_ymd = result_time[0].split('/')
+            
+            # H m sを分割
             result_hms = result_time[1].split(':')
+            
+            # 時間の結合
             strTime = result_ymd[0] + '-' + result_ymd[1] + '-' + result_ymd[2] + 'T' + result_hms[0] + ':' + result_hms[1] + ':' + result_hms[2]
+            
+            # 改行を削除（何故かこれをやらないとうごかない）
             retTime  = strTime.split('\n')
+            
+            # 変換結果を返す
             return retTime[0]
+        
+        # エラー時異常を返す
         except :
-            return 0
+            return bool(False)
     
+    # カレンダーの予定の名前を生成
     def name_create(self, gm_name, system):
+        
+        # author卓system名 を生成
         mes = gm_name + '卓' + system
+        
+        # 生成名を返す
         return mes
     
+    # 形式が異なるAgenda投稿者へのエラーメッセージ生成
     def error_message_create(self,mode,com):
+        
+        # エラーメッセージの生成
         send_ms = self.AGENDA_ERR_MSG[mode] + '```' + com + '```' + '\n以下のフォーマットで投稿してください。\n' + self.AGENDA_STANDARD
         return send_ms
 
+    # カレンダーAPIを叩くための情報の生成
     def calendar_event_create(self, mode, send_ms, author):
-        if send_ms[3] != '':
-            title = self.name_create(author, send_ms[3])
-        else:
-            title = 0
         
+        # システム名がNULLでない
+        if send_ms[3] != '':
+            # カレンダー名を生成
+            title = self.name_create(author, send_ms[3])
+        
+        # システム名がNULL
+        else:
+            title = bool(False)
+        
+        # 開始/終了時刻の生成
+        # 生成に失敗したらexcept文へ飛ぶ
         try:
-            # 日付の検査
+            
+            # カレンダーへ予定追加時
             if mode == self.CALENDAR_ADD:
-                # カレンダーへのイベント追加
+
+                # 時刻の生成
                 startTime = self.time_format_change(send_ms[1])
                 endTime = self.time_format_change(send_ms[2])
+            
+            # カレンダーの予定削除時
             else:
-                # カレンダーへのイベント削除
+
+                # 時刻の生成(削除時は時差の情報が必要)
                 startTime = self.time_format_change(send_ms[1]) + '+09:00'
                 endTime = self.time_format_change(send_ms[2]) + '+09:00'
-            if title != 0 and startTime != 0 and endTime != 0:
-                ret = [title, startTime, endTime]
+            
+            # APIを叩くための情報が不足しているとき
+            if title == bool(False) or startTime == bool(False) or endTime == bool(False):
+                
+                # 異常も格納
+                ret = bool(False)
+            
+            # APIを叩くための情報が揃っている時
             else:
-                ret = 0
+                
+                # 情報を戻り値に格納
+                ret = [title, startTime, endTime]
+                
             return ret
+        
+        # 時刻の生成でエラー発生時、異常を戻す
         except:
-            return 0
-    
+            return bool(False)
+        
+    # カレンダーへの操作処理を呼び出す
     def calendar_refresh(self, mode, title, startTime, endTime):
+        
+        # カレンダーへの操作でエラーが発生した場合except文へ飛ぶ
         try:
+            
+            # カレンダーにイベントを追加
             if mode == self.CALENDAR_ADD:
                 calendar.add_calendar_event(title, startTime, endTime)
+            
+            # カレンダーからイベントを削除
             else:
                 calendar.del_calendar_event(title, startTime, endTime)
-            return 1
+                
+            # 正常を返す
+            return bool(True)
+        
+        # カレンダーAPIを叩いた結果エラーが発生したとき
+        # 異常を返す
         except:
-            return 0
+            return bool(False)
 
+    # 卓一覧リストを一行生成する
     def session_list_create(self, send_ms, author, pl_num):
+        
+        # author卓system　文字列を生成
         system = self.name_create(author, send_ms[3])
+        
+        # シナリオ名を取得
         title = send_ms[4]
+        
+        # 開始/終了日時を時間として取得
         startTime = datetime.datetime.strptime(self.time_for_discord(send_ms[1]), '%Y-%m-%d %H:%M:%S')
         endTime = datetime.datetime.strptime(self.time_for_discord(send_ms[2]), '%Y-%m-%d %H:%M:%S')
+        
+        # 参加人数 / 募集人数 文字列を生成
         player_num = str(pl_num) + ' / ' +str(send_ms[6])
         
+        # 現在時刻を取得
         now = datetime.datetime.now()
         
+        # 現在時刻より卓の開始日が過去の場合
         if startTime < now:
-            return 0
+            return bool(False)
+        
+        # 現在時刻より卓の開始日が先の場合
         else:
+            
+            # 時刻を文字列に変換
             startTime = self.time_for_discord(send_ms[1])
             endTime = self.time_for_discord(send_ms[2])
+            
+            # 卓情報をリストに格納
             arrRet = [system, title, startTime, endTime, player_num]
+            
+            # 卓情報を戻す
             return arrRet
-        
+    
+    # 卓一覧リスト用の時刻生成処理
     def time_for_discord(self, mes):
+        # YMD Hmsと分割
         result_time = str(mes).split(' ')
+        
+        # Y M D と分割
         result_ymd = result_time[0].split('/')
+        
+        # H m s と分割
         result_hms = result_time[1].split(':')
+        
+        # 現在日時を文字列を結合して取得
         strTime = result_ymd[0] + '-' + result_ymd[1] + '-' + result_ymd[2] + ' ' + result_hms[0] + ':' + result_hms[1] + ':' + result_hms[2]
+        
+        # 改行を削除(念の為)
         retTime  = strTime.split('\n')
+        
+        # 時刻を返却
         return retTime[0]
 

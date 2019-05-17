@@ -166,7 +166,7 @@ if __name__ == '__main__':
                 
                 # 形式が正しい投稿の場合、編集元の予定をカレンダーから削除
                 # 投稿時、編集時にチェックしてるのでエラーの送信は不要
-                if send_ms != bool(FALSE):
+                if send_ms != bool(False):
                     
                     # 投稿者のDiscord名を取得（鯖でのニックネーム)
                     author = str(before.author.nick)
@@ -174,19 +174,21 @@ if __name__ == '__main__':
                     # 編集前の卓の予定をカレンダーから消去するための情報を生成
                     ret = agenda_control.calendar_event_create(agenda_control.CALENDAR_DEL, send_ms, author)
                     
-                    # 編集前の卓の予定をカレンダーから削除
-                    agenda_control.calendar_refresh(agenda_control.CALENDAR_DEL,ret[0], ret[1], ret[2])
+                    # カレンダー消去用の情報の生成に成功したとき
+                    if ret != bool(False):
+                        # 編集前の卓の予定をカレンダーから削除
+                        agenda_control.calendar_refresh(agenda_control.CALENDAR_DEL,ret[0], ret[1], ret[2])
 
             # 編集後のAgendaの投稿文を検査
             if re.match('\@everyone', after.content):
-                ret1 = bool(TRUE)
-                ret2 = bool(TRUE)
+                ret1 = bool(True)
+                ret2 = bool(True)
                 
                 # Agendaの形式チェック
                 send_ms = agenda_control.on_message_agenda_write(after.content)
                 
                 # 形式が正しい投稿の場合、編集元の予定をカレンダーへ追加
-                if send_ms != bool(FALSE):
+                if send_ms != bool(False):
                     
                     # 投稿者のDiscord名を取得（鯖でのニックネーム)
                     author = str(after.author.nick)
@@ -195,7 +197,7 @@ if __name__ == '__main__':
                     ret1 = agenda_control.calendar_event_create(agenda_control.CALENDAR_ADD, send_ms, author)
                     
                     # 情報の作成に成功したとき
-                    if ret1 != bool(FALSE):
+                    if ret1 != bool(False):
                         
                         # 編集後の卓の情報をカレンダーへ追加
                         ret2 = agenda_control.calendar_refresh(agenda_control.CALENDAR_ADD,ret1[0], ret1[1], ret1[2])
@@ -203,7 +205,7 @@ if __name__ == '__main__':
                 # 1.編集結果の形式が不正
                 # 2.編集後の卓の予定に誤りがある
                 # 3.カレンダー操作が何らかの理由で失敗した 1~3のいづれかのとき
-                if send_ms == bool(FALSE) or ret1 == bool(FALSE) or ret2 == bool(FALSE):
+                if send_ms == bool(False) or ret1 == bool(False) or ret2 == bool(False):
 
                     # 投稿者にその旨をDMで通知
                     
@@ -211,7 +213,7 @@ if __name__ == '__main__':
                     dm = await before.author.create_dm()
                     
                     # dmで送信するエラーメッセージの作成
-                    send_ms = agenda_control.error_message_create(agenda_control.AGENDA_EDIT_ERROR, com2)
+                    send_ms = agenda_control.error_message_create(agenda_control.AGENDA_EDIT_ERROR, after.content)
                     
                     # dmの送信
                     await dm.send(send_ms)
@@ -230,7 +232,7 @@ if __name__ == '__main__':
             send_ms = agenda_control.on_message_agenda_write(com)
 
             # Agendaが削除された場合はカレンダーからイベントを削除
-            if send_ms != bool(FALSE):
+            if send_ms != bool(False):
 
                 # 投稿者のDiscord名を取得（鯖でのニックネーム)
                 author = str(message.author.nick)
@@ -343,7 +345,7 @@ if __name__ == '__main__':
                 send_ms = agenda_control.on_message_agenda_write(com)
                 
                 # Agendaへの投稿が不正形式だった場合、その旨を投稿者にDMし、投稿文を削除
-                if send_ms == bool(FALSE):
+                if send_ms == bool(False):
                     
                     # dmを生成
                     dm = await message.author.create_dm()
@@ -359,8 +361,8 @@ if __name__ == '__main__':
 
                 # Agendaへの投稿が正常に行われたとき、カレンダーにイベントを追加し、メッセージをピンどめする
                 else:
-                    ret1 = bool(TRUE)
-                    ret2 = bool(TRUE)
+                    ret1 = bool(True)
+                    ret2 = bool(True)
                     
                     # 投稿者のDiscord名を取得（鯖でのニックネーム)
                     author = str(message.author.nick)
@@ -369,26 +371,25 @@ if __name__ == '__main__':
                     ret1 = agenda_control.calendar_event_create(agenda_control.CALENDAR_ADD, send_ms, author)
                     
                     # 情報の作成に成功したとき
-                    if ret1 != bool(FALSE):
+                    if ret1 != bool(False):
                         
                         # 卓の予定をカレンダーに追加
                         ret2 = agenda_control.calendar_refresh(agenda_control.CALENDAR_ADD,ret1[0], ret1[1], ret1[2])
                     
                     # 1.投稿された卓の予定に誤りがある
                     # 2.カレンダー操作が何らかの理由で失敗した 1~2のいづれかのとき
-                    if ret1 == bool(FALSE) or ret2 == bool(FALSE):
-                        # Agendaへの投稿が不正形式だった場合、その旨を投稿者にDMし、投稿文を削除
-                        if send_ms == bool(FALSE):
-                    
+                    # Agendaへの投稿が不正形式だった場合、その旨を投稿者にDMし、投稿文を削除
+                    if ret1 == bool(False) or ret2 == bool(False):
+
                         # dmを生成
                         dm = await message.author.create_dm()
-                    
+
                         # エラーメッセージの生成
                         send_ms = agenda_control.error_message_create(agenda_control.AGENDA_DATE_ERROR, com)
-                    
+
                         # dmを送信
                         await dm.send(send_ms)
-                    
+
                         # 投稿文を削除
                         await message.delete()
 
@@ -427,7 +428,7 @@ if __name__ == '__main__':
                 ret = agenda_control.session_list_create(database_row, author, pl_num)
                 
                 # 今日よりもメッセージ内の開始日の日付が古い場合
-                if ret == bool(FALSE):
+                if ret == bool(False):
                     
                     # メッセージのピンどめを解除
                     await pin_mes_line.unpin()
