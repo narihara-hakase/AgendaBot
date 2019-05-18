@@ -6,10 +6,11 @@ import datetime
 import asyncio
 import time
 import argparse #コマンドラインコントロール
-import json
+import json     #json処理
 
 ### 自作モジュールのインポート ###
 #自作パッケージ内のすべてのモジュールをインポートする。import sandboxbot　を使用したい場合は__init__.pyに各ディレクトリを指定せよ
+#グローバルの名前空間にロードするので名称の重複に注意せよ
 from sandboxbot import *
 
 # 起動オプション
@@ -23,7 +24,7 @@ def get_bot_options(path):
     param_json = json.load(file)
 
     index = 1 if args.debug else 0
-    bot_status = param_json['bot_status'][index]
+    bot_status = param_json['bot_status'][index] #辞書型で格納される
     file.close()
 
     return bot_status
@@ -40,7 +41,6 @@ CH_GENERAL = bot_options["ch_general"]
 CH_AGENDA  = bot_options["ch_agenda" ]
 CH_BOT     = bot_options["ch_bot"    ]
 CH_ADMIN   = bot_options["ch_admin"  ]
-
 
 ### インスタンスの生成 ###
 sw = swbot.Swstat()
