@@ -29,8 +29,8 @@ class agenda_control:
     def __init__(self):#インスタンス変数管理
     	pass
 
-    # 日付を抽出する機能
-    def date_separate(self, mes):
+    # 日付を抽出し返信用メッセージを生成する機能
+    def check_date_str(self, mes):
         str_list = re.findall('[０-９\d]+月[０-９\d]+日|[０-９\d]+[\/][０-９\d]+',mes)
 
         if str_list == []:

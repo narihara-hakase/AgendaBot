@@ -86,7 +86,7 @@ if __name__ == '__main__':
         ### リアクションがアジェンダCHに付与されたとき
         if reaction.message.channel.id == CH_AGENDA:
             mes = reaction.message.content
-            send_ms = agenda_control.date_separate(mes)
+            send_ms = agenda_control.check_date_str(mes)
             dm = await user.create_dm()
             await dm.send(send_ms + "のセッションに参加申し込みしました")
 
@@ -96,7 +96,7 @@ if __name__ == '__main__':
         ### リアクションがアジェンダCHから消去されたとき
         if reaction.message.channel.id == CH_AGENDA:
             mes = reaction.message.content
-            send_ms = agenda_control.date_separate(mes)
+            send_ms = agenda_control.check_date_str(mes)
             dm = await user.create_dm()
             await dm.send(send_ms + "のセッションの参加を取り消しました")
 
