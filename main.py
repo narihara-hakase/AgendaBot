@@ -7,11 +7,8 @@ import asyncio
 import time
 
 ### 自作モジュールのインポート ###
-import swbot as SW
-import accesslog
-import dicebot
-import google_calendar
-import agenda_control
+from sandboxbot import *
+#自作パッケージ内のすべてをインポートする。import sandboxbot　を使用したい場合は__init__.pyに各ディレクトリを指定せよ
 
 ### 定数宣言 ###
 # BOTのトークン
@@ -43,15 +40,15 @@ HELP_MSG =['``` ### ダイスを振る ###',
            '``` ']
 
 if __name__ == '__main__':
-            
+
     ### インスタンスの呼び出し ###
-    sw = SW.Swstat()
+    sw = swbot.Swstat()
     Alog = accesslog.accesslog()
     DiceBot = dicebot.dicebot()
     calendar = google_calendar.google_calendar()
-    client = discord.Client()        
+    client = discord.Client()
     agenda_control = agenda_control.agenda_control()
-    
+
     ### 起動時のイベントハンドラ ###
     @client.event
     async def on_ready():
@@ -60,7 +57,7 @@ if __name__ == '__main__':
         print(client.user.id)
         print('------')
         asyncio.ensure_future(throw_message_date_changed())
-        
+
     ### 時刻管理 ###
     async def throw_message_date_changed():
         while True:
@@ -70,7 +67,7 @@ if __name__ == '__main__':
                 send_ms ='現在の募集中セッションは'+str(len(pin_ms))+'件だよ。参加してね。'
                 await client.get_channel(CH_GENERAL).send(send_ms)
             await asyncio.sleep(60)
-        
+
     ### reaction付与時のイベントハンドラ ###
     @client.event
     async def on_reaction_add(reaction, user):
@@ -99,7 +96,7 @@ if __name__ == '__main__':
             pin_ms = await discord.abc.Messageable.pins(client.get_channel(CH_AGENDA))
             send_ms ='現在の募集中セッションは'+str(len(pin_ms))+'件だよ。参加してね。'
             await client.get_channel(CH_GENERAL).send(send_ms)
-        
+
         ### Agendaが編集されたとき
         else:
             com1 = before.content
@@ -112,7 +109,7 @@ if __name__ == '__main__':
                     author = str(after.author.nick)
                     ret = agenda_control.calendar_event_create(agenda_control.CALENDAR_DEL, send_ms, author)
                     ret = agenda_control.calendar_refresh(agenda_control.CALENDAR_DEL,ret[0], ret[1], ret[2])
-                    
+
             com2 = after.content
             if re.match('\@everyone', com2):
                 ret1 = 1
@@ -130,7 +127,7 @@ if __name__ == '__main__':
                     dm = await before.author.create_dm()
                     send_ms = agenda_control.error_message_create(agenda_control.AGENDA_EDIT_ERROR, com2)
                     await dm.send(send_ms)
-            
+
     ### メッセージが削除された時のイベントハンドラ ###
     @client.event
     async def on_message_delete(message):
@@ -150,7 +147,7 @@ if __name__ == '__main__':
     @client.event
     async def on_message(message):
         com = message.content
-        
+
         ### ヘルプ
         # 各機能毎にヘルプつくって、そちらに誘導するよう変更すべきでは?
         # 今後各機能増やしていくときヘルプ作るのだるくなりそうなので (20190511所感)
@@ -196,7 +193,7 @@ if __name__ == '__main__':
         elif re.match('\$logs', com):
             send_ms = Alog.debug_print_str()
             await message.channel.send(send_ms)
-            
+
         ### Agenda管理系
         elif re.match('\@everyone', com):
             if message.channel.id == CH_AGENDA:
@@ -213,7 +210,7 @@ if __name__ == '__main__':
                     ret1 = 1
                     ret2 = 1
                     author = str(message.author.nick)
-                    
+
                     ret1 = agenda_control.calendar_event_create(agenda_control.CALENDAR_ADD, send_ms, author)
                     # 日付のエラーがないか確認
                     if ret1 != 0:
@@ -235,5 +232,5 @@ if __name__ == '__main__':
         if message.content == '/cleanup':
             await message.channel.purge()
         #'''
-                
+
     client.run(TOKEN)
