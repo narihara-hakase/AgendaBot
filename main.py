@@ -185,15 +185,13 @@ if __name__ == '__main__':
         #ダイス(振るだけ)
         elif re.match('\$\d+d\d+', com):
             dice_cmd_list = re.findall('\d+',com)
-            mode = DiceBot.throw_mode()
-            send_ms = DiceBot.dice_message(mode, int(dice_cmd_list[0]),int(dice_cmd_list[1]))
+            send_ms = DiceBot.dice_roll_str(int(dice_cmd_list[0]),int(dice_cmd_list[1]))
             await message.channel.send(send_ms)
 
         # ダイス(ソートして振る)
         elif re.match('\$[sS]\d+d\d+', com):
             dice_cmd_list = re.findall('\d+',com)
-            mode = DiceBot.sort_mode()
-            send_ms = DiceBot.dice_message(mode, int(dice_cmd_list[0]),int(dice_cmd_list[1]))
+            send_ms = DiceBot.dice_roll_sort_str(int(dice_cmd_list[0]),int(dice_cmd_list[1]))
             await message.channel.send(send_ms)
 
         ### SW-BOT系

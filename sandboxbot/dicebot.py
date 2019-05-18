@@ -2,36 +2,28 @@ import re
 import random
 
 class dicebot:
-    # ダイスの振り方
-    __THROW = 0
-    __SORT  = 1
 
     def __init__(self):#インスタンス変数管理
-    	pass
-    
+        self.dice_ary = []
+        self.dice_num  = ""
+        self.dice_total = ""
+        self.dice_mean = ""
+
     # Diceを振る機能
-    def dice_message(self, mode, num, sides):
-        dice = []
+    def dice_roll(self,num, sides):
         for s in range(0, num):
-            dice.append(random.randint(1, sides))
+            self.dice_ary.append(random.randint(1, sides))
+        self.dice_num = ','.join(map(str, self.dice_ary))
+        self.dice_total = str(sum(self.dice_ary))
+        self.dice_mean = str(((sides + 1)) / 2 * num)
 
-        if mode == dicebot.__SORT:
-            dice.sort()
-
-        dice_num = map(str, dice)
-        dice_num = ','.join(dice_num)
-        dice_total = str(sum(dice))
-
-        if mode == dicebot.__SORT:
-            dice_mean = str(((sides + 1)) / 2 * num)
-            send_ms = 'ころころ...' + '[' + dice_num + '] 合計:'+ dice_total + ' 期待値:' + dice_mean
-        else:
-            send_ms = 'ころころ...' + '[' + dice_num + '] 合計:'+ dice_total
+    def dice_roll_str(self, num, sides):
+        self.dice_roll(num, sides)
+        send_ms = 'ころころ...' + '[' + self.dice_num + '] 合計:'+ self.dice_total
         return send_ms
 
-    # 定数返却機能
-    def sort_mode(self):
-        return dicebot.__SORT
-    
-    def throw_mode(self):
-        return dicebot.__THROW
+    def dice_roll_sort_str(self, num, sides):
+        self.dice_roll(num, sides)
+        self.dice_ary.sort()
+        send_ms = 'ころころ...' + '[' + self.dice_num + '] 合計:'+ self.dice_total + ' 期待値:' + self.dice_mean
+        return send_ms
