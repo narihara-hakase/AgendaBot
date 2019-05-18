@@ -5,49 +5,52 @@ import random
 import datetime
 import asyncio
 import time
+import argparse #コマンドラインコントロール
+import json
 
 ### 自作モジュールのインポート ###
+#自作パッケージ内のすべてのモジュールをインポートする。import sandboxbot　を使用したい場合は__init__.pyに各ディレクトリを指定せよ
 from sandboxbot import *
-#自作パッケージ内のすべてをインポートする。import sandboxbot　を使用したい場合は__init__.pyに各ディレクトリを指定せよ
+
+# 起動オプション
+parser = argparse.ArgumentParser(description='sandboxbot本体 helpは-h') #パーサ作るよ
+parser.add_argument('--debug', action='store_false',help='指定なしでture(本番環境) 指定アリでfalse(テスト環境)')  # --debug指定なしでture(本番環境) 指定アリでfalse(テスト環境)
+args = parser.parse_args()
+
+#オプションに応じてjsonからbotパラメーターを引っ張る。
+def get_bot_options(path):
+    file = open(path, 'r', encoding="utf8")
+    param_json = json.load(file)
+
+    index = 1 if args.debug else 0
+    bot_status = param_json['bot_status'][index]
+    file.close()
+
+    return bot_status
+
+json_path = './bot_options.json'
+bot_options = get_bot_options(json_path)
 
 ### 定数宣言 ###
 # BOTのトークン
-TOKEN = 'NTMyNTA3MDQzMDA1ODU3Nzky.XNGDNQ.G21CFz3yX_KR6Uvzj_6-PNA2k6Y'
+TOKEN = bot_options["token"]
 
 # DiscordのテキストChID
-CH_GENERAL = 576636764349923328
-CH_AGENDA  = 576636894302175282
-CH_BOT     = 576636917735489536
-CH_ADMIN   = 577033215055888385
+CH_GENERAL = bot_options["ch_general"]
+CH_AGENDA  = bot_options["ch_agenda" ]
+CH_BOT     = bot_options["ch_bot"    ]
+CH_ADMIN   = bot_options["ch_admin"  ]
 
-### ヘルプメッセージ ###
-HELP_MSG =['``` ### ダイスを振る ###',
-           '$[整数]d[整数] ダイスコードに従いダイスをふる',
-           '$s[整数]d[整数] ダイスを降った後整列させ、期待値を表示する。',
-           '``` ',
-           '``` ### SWを遊ぶ ###',
-           '$sw_ab アビス強化表を振ります',
-           '$sw_ca[無しor整数] 整数の数だけ経歴表を振ります',
-           '$sw_re 冒険に出た理由表を振ります',
-           '$sw_[整数] 種族の初期値を3回生成する',
-           '  人間：0,エルフ：1,ドワーフ：2,タビット：3',
-           '  ルーンフォーク：4,ナイトメア：5,リカント：6,',
-           '  リルドラケン：7,グラスランナー：8,メリア：9,',
-           '  ティエンス：10,レプラカーン：11',
-           '``` ',
-           '``` ### ログを解析する ###',
-           '$logs VCアクセスログおよびサーバータイムを表示する。',
-           '``` ']
+
+### インスタンスの生成 ###
+sw = swbot.Swstat()
+Alog = accesslog.accesslog()
+DiceBot = dicebot.dicebot()
+calendar = google_calendar.google_calendar()
+client = discord.Client()
+agenda_control = agenda_control.agenda_control()
 
 if __name__ == '__main__':
-
-    ### インスタンスの呼び出し ###
-    sw = swbot.Swstat()
-    Alog = accesslog.accesslog()
-    DiceBot = dicebot.dicebot()
-    calendar = google_calendar.google_calendar()
-    client = discord.Client()
-    agenda_control = agenda_control.agenda_control()
 
     ### 起動時のイベントハンドラ ###
     @client.event
@@ -56,6 +59,7 @@ if __name__ == '__main__':
         print(client.user.name)
         print(client.user.id)
         print('------')
+        print(f'運命はダイスに託された！\n{bot_options["code"]}起動！')
         asyncio.ensure_future(throw_message_date_changed())
 
     ### 時刻管理 ###
@@ -152,7 +156,27 @@ if __name__ == '__main__':
         # 各機能毎にヘルプつくって、そちらに誘導するよう変更すべきでは?
         # 今後各機能増やしていくときヘルプ作るのだるくなりそうなので (20190511所感)
         if re.match('\$help', com):
+            ### ヘルプメッセージ ###
+            HELP_MSG =['``` ### ダイスを振る ###',
+                       '$[整数]d[整数] ダイスコードに従いダイスをふる',
+                       '$s[整数]d[整数] ダイスを降った後整列させ、期待値を表示する。',
+                       '``` ',
+                       '``` ### SWを遊ぶ ###',
+                       '$sw_ab アビス強化表を振ります',
+                       '$sw_ca[無しor整数] 整数の数だけ経歴表を振ります',
+                       '$sw_re 冒険に出た理由表を振ります',
+                       '$sw_[整数] 種族の初期値を3回生成する',
+                       '  人間：0,エルフ：1,ドワーフ：2,タビット：3',
+                       '  ルーンフォーク：4,ナイトメア：5,リカント：6,',
+                       '  リルドラケン：7,グラスランナー：8,メリア：9,',
+                       '  ティエンス：10,レプラカーン：11',
+                       '``` ',
+                       '``` ### ログを解析する ###',
+                       '$logs VCアクセスログおよびサーバータイムを表示する。',
+                       '``` ']
+
             mes = ''
+
             for ele_help in HELP_MSG:
                 mes = mes + ele_help + '\n'
             await message.channel.send(mes)
