@@ -2,7 +2,7 @@ import datetime
 import pickle
 import re
 import os.path
-from googleapiclient.discovery import build
+#from googleapiclient.discovery import build
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 
@@ -52,16 +52,16 @@ class google_calendar:
             with open('token.pickle', 'wb') as token:
                 pickle.dump(creds, token)
         '''
-        
+
         # token.pickleの読み込み'(token.pickleを作成する際はコメントアウトすること)
         with open('token.pickle', 'rb') as token:
             creds = pickle.load(token)
 
         # カレンダーAPIとの接続
         service = build('calendar', 'v3', credentials=creds)
-        
+
         return service
-    
+
     def add_calendar_event(self, summary, start_time, end_time):
         # APIとの接続
         service = self.connect()
@@ -82,20 +82,20 @@ class google_calendar:
             calendarId=google_calendar.__CARENDAR_ID,
             body=body
         ).execute()
-    
+
     def del_calendar_event(self, summary, start_time, end_time):
         # APIとの接続
         service = self.connect()
 
         # イベントIDの取得
         eventid = self.get_calendar_event(summary, start_time, end_time)
-       
+
         # カレンダのイベントを削除
         service.events().delete(
             calendarId=google_calendar.__CARENDAR_ID,
             eventId=eventid
-        ).execute()        
-    
+        ).execute()
+
     def get_calendar_event(self, summary, start_time, end_time):
         # APIとの接続
         service = self.connect()
@@ -109,31 +109,31 @@ class google_calendar:
                 calendarId=google_calendar.__CARENDAR_ID,
                 pageToken=page_token
             ).execute()
-            
+
             # 日付データ文字(引数)を置換
             startTime = datetime.datetime.strptime(start_time,self.__FORMAT_TIME)
             endTime = datetime.datetime.strptime(end_time,self.__FORMAT_TIME)
-            
+
             # イベントの検索
             for event in events['items']:
                 start = event['start']
                 end   = event['end']
-                
+
                 # 日付と卓名が一致したら、それを返却
                 if event['summary'] == summary and datetime.datetime.strptime(start['dateTime'],self.__FORMAT_TIME) == startTime and datetime.datetime.strptime(end['dateTime'],self.__FORMAT_TIME) == endTime:
                     eventid = event['id']
                     break
-            
+
             # 次イベントの取得
             page_token = events.get('nextPageToken')
-        
+
             # 読むイベントがなくなったら終了
             if not page_token:
                 break
-        
+
         # idの返却
         return eventid
-    
+
 '''
 メモ
         # カレンダー系(試験用)
