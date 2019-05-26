@@ -1,0 +1,20 @@
+{
+  "bot_status":[
+    {
+      "code":"Debug mode",
+      "token":"NTMyNTA3MDQzMDA1ODU3Nzky.XNGDNQ.G21CFz3yX_KR6Uvzj_6-PNA2k6Y",
+      "ch_general":576636764349923328,
+      "ch_agenda" :576636894302175282,
+      "ch_bot"    :576636917735489536,
+      "ch_admin"  :577033215055888385
+    },
+    {
+      "code":"Narihara Bot feat X",
+      "token":"none",
+      "ch_general":0,
+      "ch_agenda" :0,
+      "ch_bot"    :0,
+      "ch_admin"  :0
+    }
+  ]
+}

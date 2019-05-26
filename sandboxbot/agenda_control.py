@@ -1,11 +1,15 @@
 import re
+<<<<<<< HEAD:agenda_control.py
 import google_calendar
 import datetime
+=======
+from .google_calendar import *
+>>>>>>> narihara-dep:sandboxbot/agenda_control.py
 
-calendar = google_calendar.google_calendar()
+calendar = google_calendar()
 
 class agenda_control:
-    
+
     SINGLE_AGENDA_NUM = 8  # 種別/開始/終了/システム/シナリオ名/ツール/募集人数/概要
     CANPANE_AGENDA_NUM = 6 # 種別/システム/シナリオ名/ツール/募集人数/概要
     ALWAYS_AGENDA_NUM = 6  # 種別/システム/シナリオ名/ツール/募集人数/概要
@@ -16,29 +20,35 @@ class agenda_control:
     DATABASE_COLUMN_END_TIME = 2
     DATABASE_COLUMN_CAPACITY = 7
     DATABASE_COLUMN_NOTES = 8
+<<<<<<< HEAD:agenda_control.py
     
     AGENDA_STANDARD = '```\n@everyone\n｜　種　別　｜単発/キャンペーン/常時\n｜開始日時　｜2019/05/15 19:00:00 (半角で入力してください)\n｜終了日時　｜2019/05/15 23:00:00 (半角で入力してください)\n｜システム　｜SW2.5\n｜シナリオ名｜シナリオ名\n｜ツール　　｜どどんとふ\n｜募集人数　｜2\n｜　概　要　｜\n卓の説明、その他。\n```'
     
+=======
+
+    AGENDA_STANDARD = '```\n@everyone\n｜　種　別　｜単発/キャンペーン/常時\n｜開始日時　｜2019/05/15 19:00 (半角で入力してください)\n｜終了日時　｜2019/05/15 23:00 (半角で入力してください)\n｜システム　｜SW2.5\n｜シナリオ名｜シナリオ名\n｜ツール　　｜どどんとふ\n｜募集人数　｜2\n｜　概　要　｜\n卓の説明、その他。\n```'
+
+>>>>>>> narihara-dep:sandboxbot/agenda_control.py
     AGENDA_ERR_MSG = ['以下の卓の投稿に失敗しました。\n','以下の投稿の編集結果のフォーマットが異なります、修正してください。','以下の投稿の卓は日付情報がフォーマットと異なります、修正してください。' ]
     AGENDA_ADD_ERROR = 0
     AGENDA_EDIT_ERROR = 1
     AGENDA_DATE_ERROR = 2
-    
+
     CALENDAR_ADD = 0
     CALENDAR_DEL = 1
-    
+
     def __init__(self):#インスタンス変数管理
     	pass
 
-    # 日付を抽出する機能
-    def date_separate(self, mes):
+    # 日付を抽出し返信用メッセージを生成する機能
+    def check_date_str(self, mes):
         str_list = re.findall('[０-９\d]+月[０-９\d]+日|[０-９\d]+[\/][０-９\d]+',mes)
 
         if str_list == []:
             send_ms = '開催日時不明'
         else:
             send_ms = str_list[0]
-        
+
         return send_ms
 
 
@@ -79,9 +89,15 @@ class agenda_control:
         # 単発卓投稿文の場合、開始/終了時間がNULLの場合異常を返す
         if arrDataNum == self.SINGLE_AGENDA_NUM:
             if arrMes[self.DATABASE_COLUMN_START_TIME] == 0 or arrMes[self.DATABASE_COLUMN_END_TIME] == 0:
+<<<<<<< HEAD:agenda_control.py
                 return bool(False)
        
         # Agendaの各要素を格納
+=======
+                return 0
+
+        # データベース1行分のリストにデータをコピー
+>>>>>>> narihara-dep:sandboxbot/agenda_control.py
         # everyoneから始まる行が0、種別が1、種別の内容が2…と格納されている
         for i in range(self.DATABASE_NUM):
             
@@ -108,8 +124,12 @@ class agenda_control:
         
         # 格納したデータを戻す
         return database_row
+<<<<<<< HEAD:agenda_control.py
     
     # カレンダー用の日付形式変更
+=======
+
+>>>>>>> narihara-dep:sandboxbot/agenda_control.py
     def time_format_change(self, mes):
 
         # 文字列操作に失敗したらexcept文へ飛ぶ
@@ -135,9 +155,14 @@ class agenda_control:
         
         # エラー時異常を返す
         except :
+<<<<<<< HEAD:agenda_control.py
             return bool(False)
     
     # カレンダーの予定の名前を生成
+=======
+            return 0
+
+>>>>>>> narihara-dep:sandboxbot/agenda_control.py
     def name_create(self, gm_name, system):
         
         # author卓system名 を生成
@@ -145,8 +170,12 @@ class agenda_control:
         
         # 生成名を返す
         return mes
+<<<<<<< HEAD:agenda_control.py
     
     # 形式が異なるAgenda投稿者へのエラーメッセージ生成
+=======
+
+>>>>>>> narihara-dep:sandboxbot/agenda_control.py
     def error_message_create(self,mode,com):
         
         # エラーメッセージの生成
@@ -163,10 +192,15 @@ class agenda_control:
         
         # システム名がNULL
         else:
+<<<<<<< HEAD:agenda_control.py
             title = bool(False)
         
         # 開始/終了時刻の生成
         # 生成に失敗したらexcept文へ飛ぶ
+=======
+            title = 0
+
+>>>>>>> narihara-dep:sandboxbot/agenda_control.py
         try:
             
             # カレンダーへ予定追加時
@@ -199,9 +233,14 @@ class agenda_control:
         
         # 時刻の生成でエラー発生時、異常を戻す
         except:
+<<<<<<< HEAD:agenda_control.py
             return bool(False)
         
     # カレンダーへの操作処理を呼び出す
+=======
+            return 0
+
+>>>>>>> narihara-dep:sandboxbot/agenda_control.py
     def calendar_refresh(self, mode, title, startTime, endTime):
         
         # カレンダーへの操作でエラーが発生した場合except文へ飛ぶ
